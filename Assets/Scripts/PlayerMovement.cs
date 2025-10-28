@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -6,11 +7,24 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float jumpPower;
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private LayerMask wallLayer;
+    [SerializeField] private AudioClip jumpSound;
+    [SerializeField] private AudioClip eatSound;
+    [SerializeField] private AudioClip ratSound;
+    
     private Rigidbody2D body;
     private Animator anim;
     private BoxCollider2D boxCollider;
     private float wallJumpCooldown;
     private float horizontalInput;
+
+    private Vector3 respawnPoint;
+    public GameObject fallDetector;
+
+    private int score = 0;
+    
+    void Start() {
+        respawnPoint = transform.position; //store the players starting position for respawining 
+    }
 
     private void Awake()
     {
@@ -47,13 +61,28 @@ public class PlayerMovement : MonoBehaviour
                 body.linearVelocity = Vector2.zero;
             }
             else
-                body.gravityScale = 7;
-
+            {
+                body.gravityScale = 5;
+            }
             if (Input.GetKey(KeyCode.UpArrow))
+            {
                 Jump();
+
+                //only play jump sound once when youre holding down the jump key 
+                if(Input.GetKeyDown(KeyCode.UpArrow) && isGrounded())
+                {
+                    SoundManager.instance.PlaySound(jumpSound);
+                }
+            } 
         }
-        else
+        else 
+        {
             wallJumpCooldown += Time.deltaTime;
+        }
+
+        //move fall detector with the player
+        fallDetector.transform.position = new Vector2(transform.position.x, fallDetector.transform.position.y);
+
     }
 
     private void Jump()
@@ -71,15 +100,41 @@ public class PlayerMovement : MonoBehaviour
                 transform.localScale = new Vector3(-Mathf.Sign(transform.localScale.x), transform.localScale.y, transform.localScale.z);
             }
             else
+            {
                 body.linearVelocity = new Vector2(-Mathf.Sign(transform.localScale.x) * 3, 6);
+            }
 
             wallJumpCooldown = 0;
         }
     }
 
-    private void OnCollisionEnter2D(Collision2D collision)
+    private void OnTriggerEnter2D(Collider2D collision)
     {
+        //if you collide with the falldetector, respawn to the starting point
+        if(collision.tag == "FallDetector") 
+        {
+            transform.position = respawnPoint;
+        }
+
+        //when collecting a sardine tin, increase score by 10 
+        else if(collision.tag == "Sardine") {
+            SoundManager.instance.PlaySound(eatSound);
+            score += 10;
+            collision.gameObject.SetActive(false); //deactivate it once points have already been collected 
+        }
+
+        else if(collision.gameObject.CompareTag("Rat")) 
+        {
+            SoundManager.instance.PlaySound(ratSound);
+            score += 10;
+            Destroy(collision.gameObject);  //deactivate it once points have already been collected 
+            //Invoke("Respawn", 5);
+
+        }
     }
+    
+    //void Respawn () 
+    //{}
 
     private bool isGrounded()
     {

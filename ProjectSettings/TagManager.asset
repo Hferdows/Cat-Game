@@ -5,6 +5,9 @@ TagManager:
   serializedVersion: 3
   tags:
   - Ground
+  - FallDetector
+  - Sardine
+  - Rat
   layers:
   - Default
   - TransparentFX
@@ -14,7 +17,7 @@ TagManager:
   - UI
   - Ground
   - Wall
-  - 
+  - Player
   - 
   - 
   - 
@@ -41,6 +44,21 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Background
+    uniqueID: 3401729247
+    locked: 0
+  - name: Foreground
+    uniqueID: 2679876669
+    locked: 0
+  - name: Ground
+    uniqueID: 3594636375
+    locked: 0
+  - name: Extras
+    uniqueID: 1275468177
+    locked: 0
+  - name: Player
+    uniqueID: 409885881
     locked: 0
   m_RenderingLayers:
   - Default
