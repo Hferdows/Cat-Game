@@ -22,6 +22,7 @@ public class Enemy : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        //if(!null)
         cooldownTimer += Time.deltaTime;
 
         //attack only when player is in sight 

@@ -19,11 +19,17 @@ public class PlayerMovement : MonoBehaviour
 
     private Vector3 respawnPoint;
     public GameObject fallDetector;
-
-    private int score = 0;
+    public ScoreCounter scoreCounter;
+    public HealthBar healthBar;
+    public GameManager gameManager;
     
     void Start() {
-        respawnPoint = transform.position; //store the players starting position for respawining 
+        //store the players starting position for respawining (ended up not getting used)
+        respawnPoint = transform.position; 
+        //Find a GameObject named ScoreCounter in the Heirarchy, is slow so try to do it only once per script (in start)
+        GameObject scoreGO = GameObject.Find("ScoreCounter");
+        //searches for a scorecounter script component on the scoreGO gameObject and assigns it to scoreCounter
+        scoreCounter = scoreGO.GetComponent<ScoreCounter>();
     }
 
     private void Awake()
@@ -64,6 +70,7 @@ public class PlayerMovement : MonoBehaviour
             {
                 body.gravityScale = 5;
             }
+            //jump when using up arrow 
             if (Input.GetKey(KeyCode.UpArrow))
             {
                 Jump();
@@ -85,6 +92,7 @@ public class PlayerMovement : MonoBehaviour
 
     }
 
+    //jumping logic 
     private void Jump()
     {
         if (isGrounded())
@@ -110,37 +118,44 @@ public class PlayerMovement : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        //if you collide with the falldetector, respawn to the starting point
+        //if you collide with the falldetector, die and load game over scene 
         if(collision.tag == "FallDetector") 
         {
-            transform.position = respawnPoint;
+            healthBar.isDead = true;
+            gameObject.SetActive(false);
+            Health.totalHealth = 0f;
+            gameManager.gameOver();
+            //transform.position = respawnPoint;
         }
 
-        //when collecting a sardine tin, increase score by 10 
+        //when collecting a sardine tin, increase score by 50 
         else if(collision.tag == "Sardine") {
             SoundManager.instance.PlaySound(eatSound);
-            score += 10;
+            scoreCounter.score +=50;
             collision.gameObject.SetActive(false); //deactivate it once points have already been collected 
         }
 
-        else if(collision.gameObject.CompareTag("Rat")) 
+        if(collision.gameObject.CompareTag("Rat")) 
+        {
+            //SoundManager.instance.PlaySound(ratSound);
+            scoreCounter.score -= 30;
+            healthBar.Damage(0.1f);
+        }
+        else if(collision.gameObject.CompareTag("RatHead")) 
         {
             SoundManager.instance.PlaySound(ratSound);
-            score += 10;
+            scoreCounter.score +=100;
             Destroy(collision.gameObject);  //deactivate it once points have already been collected 
-            //Invoke("Respawn", 5);
 
         }
     }
-    
-    //void Respawn () 
-    //{}
 
     private bool isGrounded()
     {
         RaycastHit2D raycastHit = Physics2D.BoxCast(boxCollider.bounds.center, boxCollider.bounds.size, 0, Vector2.down, 0.1f, groundLayer);
         return raycastHit.collider != null;
     }
+
     private bool onWall()
     {
         RaycastHit2D raycastHit = Physics2D.BoxCast(boxCollider.bounds.center, boxCollider.bounds.size, 0, new Vector2(transform.localScale.x, 0), 0.1f, wallLayer);

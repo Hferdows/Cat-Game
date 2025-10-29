@@ -8,6 +8,7 @@ TagManager:
   - FallDetector
   - Sardine
   - Rat
+  - RatHead
   layers:
   - Default
   - TransparentFX
